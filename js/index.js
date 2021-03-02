@@ -59,13 +59,102 @@ function showBook(book){
         })
     
     const likeBtn = document.createElement('button')
-        likeBtn.innerText = "Like"
+        if(!checkForLike({username: "pouros"}, book)){
+            likeBtn.innerText = "Like"
+            likeBtn.addEventListener('click', () => {
+                likeBook(book)
+            })
+        } else{
+            likeBtn.innerText = "Unlike"
+            likeBtn.addEventListener('click', () => {
+                unlikeBook(book)
+            })
+        }
+        // likeBtn.addEventListener('click', (e) => {
+        //     likeBook(e, book)
+        // })
 
-    showPanel.append(bookCover, bookTitle)
+    showPanel.append(bookCover, likeBtn, bookTitle)
 
     if(booksubtitle !== ""){
         showPanel.append(booksubtitle)
     }
 
-    showPanel.append(bookAuthor, bookDescription, likesList, likeBtn)
+    showPanel.append(bookAuthor, bookDescription, likesList)
+}
+
+function likeBook(book){
+
+    let usersList = book.users
+    let currentUser = {
+        id: 1,
+        username: "pouros"
+    }
+    let newUsersList = usersList.concat(currentUser)
+
+    // console.log(likeButton)
+    // console.log(usersList)
+    // console.log(currentUser)
+    // console.log(newUsersList)
+    // console.log(book.id)
+
+    // if(!usersList.some(user => user.username === "pouros"))
+    // if(!checkForLike(currentUser, book)){
+
+    const reqObj = {
+        headers: {"Content-Type": "application/json"},
+        method: "PATCH",
+        body: JSON.stringify({users: newUsersList})
+    }
+
+    fetch(BOOKS_URL+book.id, reqObj)
+        .then(res => res.json())
+        .then(updatedBookObj => {
+            showBook(updatedBookObj)
+        })
+
+    // }
+    
+    // }else{
+    //     alert(`${currentUser.username} is already a fan`)
+    // }
+
+    // const reqObj = {
+    //     headers: {"Content-Type": "application/json"},
+    //     method: "PATCH",
+    //     body: JSON.stringify({users: newUsersList})
+    // }
+
+    // fetch(BOOKS_URL+book.id, reqObj)
+    // .then(res => res.json())
+    // .then(updatedBookObj => {
+    //     likeButton.innerText = "LIKED!!!!!"
+    // })
+}
+
+function unlikeBook(book){
+    const currentUser = {id:1, username: "pouros"}
+    const usersList = book.users
+    const usersIds = usersList.map(x => x.id)
+    const currentUserIndex = usersIds.indexOf(currentUser.id)
+    const newUsersList = usersList.slice(0, currentUserIndex).concat(usersList.slice(currentUserIndex+1))
+
+    // console.log(usersList)
+    // console.log(newUsersList)
+
+    const reqObj = {
+        headers: {"Content-Type": "application/json"},
+        method: "PATCH",
+        body: JSON.stringify({users: newUsersList})
+    }
+
+    fetch(BOOKS_URL+book.id, reqObj)
+        .then(res => res.json())
+        .then(updatedBookObj => {
+            showBook(updatedBookObj)
+        })
+}
+
+function checkForLike(someUser, book){
+    return(book.users.some(user => user.username === someUser.username))
 }
